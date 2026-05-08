@@ -708,10 +708,27 @@
           "arsenal";
       }
       .vs-grid > .vs-team-col:first-of-type { grid-area: psg; }
-      .vs-grid > .vs-referee { grid-area: ref; min-height: 240px; }
+      .vs-grid > .vs-referee { grid-area: ref; min-height: 320px; }
       .vs-grid > .vs-team-col--arsenal { grid-area: arsenal; }
-      .vs-referee__photo { object-position: center 25%; }
-      .vs-vs { font-size: 44px; }
+      .vs-referee__photo { object-position: 70% 30%; }
+      /* Badge ARBITRE VS déplacé sur le côté gauche (libère le centre où se trouve Sam) */
+      .vs-referee__topbadge {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        top: 14px;
+        left: 14px;
+        right: auto;
+        text-align: left;
+      }
+      .vs-referee__topbadge .vs-mono {
+        font-size: 9px;
+        letter-spacing: 0.22em;
+      }
+      .vs-vs {
+        font-size: 44px;
+        line-height: 1;
+      }
     }
 
     .vs-mono {
