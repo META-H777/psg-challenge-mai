@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#001E3C" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="manifest.json" />
+  <title>PSG Challenge Mai 2026</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: { 50: '#E8EEF5', 100: '#B7C7DB', 500: '#005091', 700: '#003866', 900: '#001E3C', 950: '#00102A' },
+            gold: { 300: '#FFE57F', 400: '#FFD54F', 500: '#FFC43D', 600: '#FFB300', 700: '#C9A227', 800: '#9C7C0F' },
+            club: { red: '#DA291C', white: '#F8F8F0' },
+            success: '#22c55e',
+            warning: '#f59e0b',
+            danger: '#ef4444',
+          },
+          fontFamily: {
+            display: ['Bebas Neue', 'Impact', 'sans-serif'],
+            body: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          animation: {
+            'pulse-gold': 'pulseGold 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'shimmer': 'shimmer 3s linear infinite',
+            'rise': 'rise 0.6s ease-out',
+          },
+          keyframes: {
+            pulseGold: { '0%, 100%': { boxShadow: '0 0 20px rgba(255,196,61,0.3)' }, '50%': { boxShadow: '0 0 50px rgba(255,196,61,0.6)' } },
+            shimmer: { '0%': { backgroundPosition: '-1000px 0' }, '100%': { backgroundPosition: '1000px 0' } },
+            rise: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&family=Cinzel:wght@600;800&display=swap" rel="stylesheet" />
+
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Firebase v10 modular SDK -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, addDoc, updateDoc, deleteDoc, serverTimestamp, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: 'REPLACE_ME',
+      authDomain: 'psg-challenge-mai-2026.firebaseapp.com',
+      projectId: 'psg-challenge-mai-2026',
+      storageBucket: 'psg-challenge-mai-2026.appspot.com',
+      messagingSenderId: 'REPLACE_ME',
+      appId: 'REPLACE_ME',
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const PSG_TEAM_EMAILS = [
+      'romain.PLACEHOLDER@gmail.com',
+      'enzo.PLACEHOLDER@gmail.com',
+      'alex.PLACEHOLDER@gmail.com',
+      'adrien.PLACEHOLDER@gmail.com',
+    ];
+
+    window.firebase = { auth, db, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, addDoc, updateDoc, deleteDoc, serverTimestamp, onSnapshot, PSG_TEAM_EMAILS };
+    window.dispatchEvent(new Event('firebase-ready'));
+  </script>
+
+  <style>
+    /* ============ BASE ============ */
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #000000;
+      color: #F8F8F0;
+      min-height: 100vh;
+    }
+    .font-display { font-family: 'Bebas Neue', Impact, sans-serif; letter-spacing: 0.02em; }
+    .font-cinzel { font-family: 'Cinzel', serif; letter-spacing: 0.05em; }
+    [x-cloak] { display: none !important; }
+    .scroll-hide::-webkit-scrollbar { display: none; }
+    .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* ============ CYAN-GOLD GLOW ============ */
+    .cyan-glow { color: #00E5FF; text-shadow: 0 0 12px rgba(0, 229, 255, 0.5); }
+    .gold-glow { color: #FFC43D; text-shadow: 0 0 12px rgba(255, 196, 61, 0.5); }
+    .cyan-gold-text {
+      background: linear-gradient(135deg, #00E5FF 0%, #FFE57F 50%, #FFC43D 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* ============ FLEUR DE LYS PATTERN BACKGROUND ============ */
+    .fleur-pattern {
+      background-color: #000000;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23FFC43D' fill-opacity='0.035'%3E%3Cpath d='M40 12 C36 22, 30 28, 24 32 C30 32, 34 36, 36 42 C36 38, 38 36, 40 36 C42 36, 44 38, 44 42 C46 36, 50 32, 56 32 C50 28, 44 22, 40 12 Z M40 38 C39 38, 38 39, 38 40 C38 41, 39 42, 40 42 C41 42, 42 41, 42 40 C42 39, 41 38, 40 38 Z M28 44 L40 50 L52 44 L40 56 L28 44 Z M40 56 L40 68'/%3E%3C/g%3E%3C/svg%3E"),
+        radial-gradient(ellipse at top, rgba(0, 56, 102, 0.45) 0%, #000000 60%);
+    }
+    .fleur-pattern-strong {
+      background-color: #000000;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23FFC43D' fill-opacity='0.08'%3E%3Cpath d='M40 12 C36 22, 30 28, 24 32 C30 32, 34 36, 36 42 C36 38, 38 36, 40 36 C42 36, 44 38, 44 42 C46 36, 50 32, 56 32 C50 28, 44 22, 40 12 Z M40 38 C39 38, 38 39, 38 40 C38 41, 39 42, 40 42 C41 42, 42 41, 42 40 C42 39, 41 38, 40 38 Z M28 44 L40 50 L52 44 L40 56 L28 44 Z M40 56 L40 68'/%3E%3C/g%3E%3C/svg%3E"),
+        radial-gradient(ellipse at center, rgba(0, 56, 102, 0.45) 0%, #000000 70%);
+    }
+
+    /* ============ STADIUM LIGHTS ============ */
+    .stadium-bg {
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 0%, rgba(255,196,61,0.14) 0%, transparent 50%),
+        radial-gradient(ellipse 80% 60% at 80% 0%, rgba(0,229,255,0.10) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 80% at 50% 100%, rgba(218,41,28,0.08) 0%, transparent 50%),
+        linear-gradient(180deg, #000000 0%, #000814 100%);
+    }
+
+    /* ============ GOLD BORDERS / GLOWS ============ */
+    .gold-border {
+      border: 1px solid rgba(255, 196, 61, 0.3);
+      box-shadow: 0 0 0 1px rgba(255, 196, 61, 0.05) inset, 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .gold-border-strong {
+      border: 2px solid;
+      border-image: linear-gradient(135deg, #FFC43D 0%, #FFE57F 50%, #C9A227 100%) 1;
+    }
+    .gold-text-gradient {
+      background: linear-gradient(135deg, #FFE57F 0%, #FFC43D 50%, #C9A227 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* ============ GLASS PANELS ============ */
+    .glass-panel {
+      background: linear-gradient(135deg, rgba(0,30,60,0.55) 0%, rgba(0,0,0,0.75) 100%);
+      backdrop-filter: blur(16px) saturate(180%);
+      border: 1px solid rgba(255, 196, 61, 0.15);
+    }
+    .glass-panel:hover { border-color: rgba(255, 196, 61, 0.4); }
+
+    /* ============ FUT CARD STYLE — FIFA Ultimate Team inspired ============ */
+    .fut-card {
+      position: relative;
+      background:
+        linear-gradient(135deg, #000814 0%, #001a2c 50%, #000000 100%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='%23FFC43D' fill-opacity='0.04'%3E%3Cpath d='M30 10 C27 18, 23 22, 18 25 C23 25, 26 28, 27 33 C27 30, 28.5 29, 30 29 C31.5 29, 33 30, 33 33 C34 28, 37 25, 42 25 C37 22, 33 18, 30 10 Z'/%3E%3C/g%3E%3C/svg%3E");
+      border-radius: 24px;
+      overflow: hidden;
+      transition: all 0.4s ease;
+      box-shadow:
+        0 0 0 1px rgba(255, 196, 61, 0.18) inset,
+        0 0 30px rgba(0, 229, 255, 0.04) inset,
+        0 8px 32px rgba(0, 0, 0, 0.7);
+    }
+    .fut-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255, 196, 61, 0.08) 0%, transparent 30%, transparent 70%, rgba(0, 229, 255, 0.05) 100%);
+      pointer-events: none;
+      border-radius: inherit;
+    }
+    .fut-card.captain {
+      box-shadow:
+        0 0 0 2px rgba(255, 196, 61, 0.5) inset,
+        0 0 60px rgba(255, 196, 61, 0.2),
+        0 8px 32px rgba(0, 0, 0, 0.7);
+      animation: pulseGold 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    .fut-card:hover {
+      transform: translateY(-6px) scale(1.01);
+      box-shadow:
+        0 0 0 1px rgba(255, 196, 61, 0.6) inset,
+        0 0 60px rgba(255, 196, 61, 0.2),
+        0 16px 48px rgba(0, 0, 0, 0.8);
+    }
+
+    /* FUT card rating + position badge */
+    .fut-rating {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 4rem;
+      line-height: 0.85;
+      background: linear-gradient(135deg, #FFE57F 0%, #FFC43D 50%, #C9A227 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 12px rgba(255, 196, 61, 0.4));
+    }
+    .fut-position {
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      font-size: 0.75rem;
+      color: #FFC43D;
+    }
+    .fut-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.875rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #ffffff 0%, #FFE57F 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* FUT stat row */
+    .fut-stat-key {
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.15em;
+      font-size: 0.65rem;
+      color: rgba(0, 229, 255, 0.7);
+      text-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
+    }
+    .fut-stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      color: #FFE57F;
+      letter-spacing: 0.05em;
+    }
+
+    /* ============ PROGRESS BARS — Cockpit Linkeo style with gold trail ============ */
+    .progress-bar {
+      height: 8px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(0, 229, 255, 0.15);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 0 0 1px rgba(255, 196, 61, 0.05) inset;
+    }
+    .progress-fill {
+      height: 100%;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 999px;
+      position: relative;
+    }
+    /* Trail dorée — particles cyan-gold qui se déplacent */
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(0, 229, 255, 0.3) 30%,
+        rgba(255, 196, 61, 0.6) 55%,
+        rgba(255, 229, 127, 0.9) 70%,
+        rgba(255, 196, 61, 0.6) 80%,
+        transparent 100%
+      );
+      animation: shimmer 2.2s linear infinite;
+      background-size: 50% 100%;
+    }
+    /* Glow externe sur barre quand pleine */
+    .progress-fill.glowing {
+      box-shadow: 0 0 12px rgba(255, 196, 61, 0.6), 0 0 24px rgba(0, 229, 255, 0.3);
+    }
+    .progress-low { background: linear-gradient(90deg, #DA291C 0%, #f87171 100%); }
+    .progress-mid { background: linear-gradient(90deg, #f59e0b 0%, #FFC43D 50%, #FFE57F 100%); }
+    .progress-high { background: linear-gradient(90deg, #00E5FF 0%, #FFC43D 50%, #FFE57F 100%); }
+
+    /* Marge bar — la grosse barre de marge brute, plus haute, plus visible */
+    .marge-bar {
+      height: 14px;
+      background:
+        linear-gradient(90deg, rgba(0,0,0,0.8), rgba(0,8,20,0.9)),
+        radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.05), transparent 70%);
+      border: 1px solid rgba(255, 196, 61, 0.25);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.6);
+    }
+    .marge-fill {
+      height: 100%;
+      transition: width 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border-radius: 999px;
+      position: relative;
+      background: linear-gradient(90deg, #00E5FF 0%, #FFC43D 40%, #FFE57F 70%, #FFC43D 100%);
+      box-shadow:
+        0 0 16px rgba(255, 196, 61, 0.6),
+        0 0 32px rgba(0, 229, 255, 0.3),
+        inset 0 1px 2px rgba(255, 255, 255, 0.4);
+    }
+    .marge-fill::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      height: 100%;
+      width: 80px;
+      background: radial-gradient(ellipse at right, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
+      filter: blur(3px);
+    }
+    .marge-fill::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.4) 50%,
+        transparent 100%
+      );
+      animation: shimmer 2s linear infinite;
+      background-size: 30% 100%;
+    }
+
+    /* ============ BUTTONS ============ */
+    .btn-gold {
+      background: linear-gradient(135deg, #FFC43D 0%, #C9A227 100%);
+      color: #001E3C;
+      font-weight: 700;
+      box-shadow: 0 4px 20px rgba(255, 196, 61, 0.3);
+      transition: all 0.3s ease;
+    }
+    .btn-gold:hover {
+      box-shadow: 0 6px 30px rgba(255, 196, 61, 0.5);
+      transform: translateY(-1px);
+    }
+    .btn-navy {
+      background: linear-gradient(135deg, #003866 0%, #001E3C 100%);
+      border: 1px solid rgba(255, 196, 61, 0.3);
+      color: #F8F8F0;
+      font-weight: 600;
+    }
+
+    /* ============ FLEUR DE LYS ICON ============ */
+    .fleur-icon::before {
+      content: '⚜';
+      color: #FFC43D;
+      font-size: 1.2em;
+      vertical-align: middle;
+      filter: drop-shadow(0 0 8px rgba(255, 196, 61, 0.5));
+    }
+
+    /* ============ STAR / TROPHY ============ */
+    .star-glow {
+      filter: drop-shadow(0 0 10px rgba(255, 196, 61, 0.6));
+    }
+
+    /* ============ TAB ACTIVE ============ */
+    .tab-active {
+      background: linear-gradient(135deg, rgba(255, 196, 61, 0.2) 0%, rgba(255, 196, 61, 0.05) 100%);
+      border: 1px solid rgba(255, 196, 61, 0.4);
+      color: #FFC43D;
+    }
+
+    /* ============ INPUT STYLE ============ */
+    .input-navy {
+      background: rgba(0, 16, 42, 0.6);
+      border: 1px solid rgba(255, 196, 61, 0.2);
+      color: #F8F8F0;
+      transition: all 0.2s;
+    }
+    .input-navy:focus {
+      outline: none;
+      border-color: #FFC43D;
+      box-shadow: 0 0 0 3px rgba(255, 196, 61, 0.1);
+    }
+
+    /* ============ BATTLE BANNER ============ */
+    .battle-banner {
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.6) 100%),
+        radial-gradient(ellipse at left, rgba(0,80,145,0.6) 0%, transparent 60%),
+        radial-gradient(ellipse at right, rgba(218,41,28,0.4) 0%, transparent 60%);
+      position: relative;
+      overflow: hidden;
+    }
+    .battle-banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23FFC43D' fill-opacity='0.05'%3E%3Cpath d='M40 12 C36 22, 30 28, 24 32 C30 32, 34 36, 36 42 C36 38, 38 36, 40 36 C42 36, 44 38, 44 42 C46 36, 50 32, 56 32 C50 28, 44 22, 40 12 Z'/%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    /* ============ VS DIVIDER ============ */
+    .vs-divider {
+      position: relative;
+    }
+    .vs-divider::before, .vs-divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 30%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #FFC43D, transparent);
+    }
+    .vs-divider::before { left: -10%; }
+    .vs-divider::after { right: -10%; }
+
+    /* Player photo placeholder ring */
+    .photo-ring {
+      background: conic-gradient(from 0deg, #FFC43D, #FFE57F, #C9A227, #FFC43D);
+      padding: 3px;
+      border-radius: 50%;
+    }
+    .photo-ring-captain {
+      background: conic-gradient(from 0deg, #FFC43D, #FFFFFF, #FFC43D, #FFE57F, #FFC43D);
+      padding: 4px;
+      border-radius: 50%;
+      animation: pulseGold 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+</head>
+<body x-data="cockpit()" x-init="init()" x-cloak>
+
+  <!-- ============ AUTH GATE ============ -->
+  <template x-if="!user">
+    <div class="fleur-pattern-strong min-h-screen flex items-center justify-center p-6">
+      <div class="max-w-md w-full glass-panel rounded-3xl p-10 text-center space-y-6 gold-border">
+        <div class="inline-block">
+          <div class="text-6xl gold-text-gradient font-display">⚜</div>
+        </div>
+        <div>
+          <p class="font-cinzel text-gold-500 tracking-[0.3em] text-xs mb-2">CHALLENGE MAI 2026</p>
+          <h1 class="font-display text-6xl text-white leading-none">PARIS<br/>SAINT-GERMAIN</h1>
+          <div class="my-4 vs-divider">
+            <span class="font-display text-2xl text-gold-500 px-4 bg-navy-900">VS</span>
+          </div>
+          <h2 class="font-display text-3xl text-white/70 leading-none">ARSENAL</h2>
+        </div>
+        <p class="text-sm text-gold-300/60 mt-6">Accès restreint à l'équipe PSG.</p>
+        <button @click="signIn()" class="w-full btn-gold px-6 py-4 rounded-xl text-lg uppercase tracking-wider">
+          ⚜ Sign in with Google
+        </button>
+        <p x-show="authError" x-text="authError" class="text-danger text-sm"></p>
+      </div>
+    </div>
+  </template>
+
+  <!-- ============ MAIN APP ============ -->
+  <template x-if="user">
+    <div class="fleur-pattern min-h-screen pb-32">
+
+      <!-- HEADER -->
+      <header class="stadium-bg sticky top-0 z-40 border-b border-gold-500/20 backdrop-blur-md">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="text-3xl gold-text-gradient">⚜</div>
+            <div>
+              <h1 class="font-display text-xl leading-none text-white">PSG <span class="text-gold-500">·</span> ARSENAL</h1>
+              <p class="text-[10px] text-gold-300/60 font-cinzel tracking-widest mt-0.5" x-text="`CHALLENGE MAI · J${dayOfChallenge}/30`"></p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-gold-300/70 hidden sm:inline" x-text="user?.displayName?.split(' ')[0]"></span>
+            <div class="photo-ring">
+              <img :src="user?.photoURL" class="w-8 h-8 rounded-full block" />
+            </div>
+            <button @click="signOutUser()" class="text-xs text-gold-300/40 hover:text-gold-500">⏻</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- TAB NAV -->
+      <nav class="sticky top-[57px] z-30 bg-navy-950/95 backdrop-blur border-b border-gold-500/10">
+        <div class="max-w-6xl mx-auto px-2 overflow-x-auto scroll-hide">
+          <div class="flex gap-1 min-w-max py-2">
+            <template x-for="tab in tabs" :key="tab.id">
+              <button @click="activeTab = tab.id" :class="activeTab === tab.id ? 'tab-active' : 'text-gold-300/50 hover:text-gold-500/80'" class="px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider whitespace-nowrap transition-all">
+                <span class="mr-1" x-text="tab.icon"></span><span x-text="tab.label"></span>
+              </button>
+            </template>
+          </div>
+        </div>
+      </nav>
+
+      <!-- CONTENT -->
+      <main class="max-w-6xl mx-auto px-4 py-6 space-y-6">
+
+        <!-- ====================== BATTLE / HOME ====================== -->
+        <section x-show="activeTab === 'home'" class="space-y-6 animate-rise">
+
+          <!-- Battle banner -->
+          <div class="battle-banner rounded-3xl p-4 sm:p-8 gold-border">
+            <p class="font-cinzel text-gold-500 tracking-[0.4em] text-[10px] sm:text-xs mb-4 text-center">⚜ MATCH EN COURS ⚜</p>
+            <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-6 relative z-10">
+              <!-- PSG side (Romain captain photo — XL) -->
+              <div class="text-center space-y-2">
+                <div class="relative inline-block">
+                  <img src="assets/img/players/romain-psg.png" alt="Romain Capitaine PSG" class="w-44 h-56 sm:w-64 sm:h-80 object-cover object-top rounded-xl shadow-2xl" style="border: 3px solid; border-image: linear-gradient(135deg, #FFE57F 0%, #FFC43D 50%, #C9A227 100%) 1; filter: drop-shadow(0 0 30px rgba(255,196,61,0.3));" onerror="this.style.display='none'" />
+                  <div class="absolute -top-3 -right-3 bg-gradient-to-br from-gold-300 to-gold-700 text-navy-900 font-display text-sm px-3 py-1.5 rounded-md shadow-lg uppercase tracking-widest">⚜ CAP</div>
+                </div>
+                <h2 class="font-display text-2xl sm:text-4xl text-white leading-none mt-3">PSG</h2>
+                <p class="font-cinzel text-[10px] text-gold-300/60 tracking-widest">PARIS · ROMAIN</p>
+                <div class="font-display text-5xl sm:text-7xl gold-text-gradient leading-none mt-1" x-text="psgScore"></div>
+                <p class="text-[10px] text-gold-300/50 font-cinzel tracking-widest">POINTS</p>
+              </div>
+              <!-- VS center -->
+              <div class="space-y-2 text-center">
+                <div class="font-display text-4xl sm:text-6xl gold-text-gradient">VS</div>
+                <div class="text-3xl sm:text-5xl">🏆</div>
+                <p class="text-[8px] sm:text-[11px] text-gold-300/40 font-cinzel tracking-widest leading-tight">CHALLENGE<br/>MAI 2026</p>
+              </div>
+              <!-- ARSENAL side (Geff captain photo — XL) -->
+              <div class="text-center space-y-2">
+                <div class="relative inline-block">
+                  <img src="assets/img/players/geff-arsenal.png" alt="Geff Capitaine ARSENAL" class="w-44 h-56 sm:w-64 sm:h-80 object-cover object-top rounded-xl border-[3px] border-club-red/70 shadow-2xl opacity-90" style="filter: drop-shadow(0 0 24px rgba(218,41,28,0.3));" onerror="this.style.display='none'" />
+                  <div class="absolute -top-3 -right-3 bg-gradient-to-br from-club-red to-red-900 text-white font-display text-sm px-3 py-1.5 rounded-md shadow-lg uppercase tracking-widest">CAP</div>
+                </div>
+                <h2 class="font-display text-2xl sm:text-4xl text-white/80 leading-none mt-3">ARSENAL</h2>
+                <p class="font-cinzel text-[10px] text-white/40 tracking-widest">LONDON · GEFF</p>
+                <div class="font-display text-5xl sm:text-7xl text-white/70 leading-none mt-1" x-text="arsenalScore"></div>
+                <p class="text-[10px] text-white/40 font-cinzel tracking-widest">POINTS</p>
+              </div>
+            </div>
+            <div class="mt-6 text-center">
+              <div class="inline-block glass-panel rounded-full px-5 py-2 text-sm">
+                <span class="text-gold-300/70 mr-2 font-cinzel tracking-widest text-[10px]">AVANCE PSG</span>
+                <span class="font-display text-xl" :class="psgScore - arsenalScore >= 0 ? 'text-success' : 'text-danger'" x-text="(psgScore - arsenalScore >= 0 ? '+' : '') + (psgScore - arsenalScore)"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Battle cry -->
+          <div class="glass-panel rounded-2xl p-6 gold-border">
+            <p class="font-cinzel text-gold-500 tracking-[0.3em] text-[10px] mb-2">⚜ MOT DU CAPITAINE</p>
+            <p class="text-white font-display text-lg sm:text-xl leading-snug" x-text="todayMotto"></p>
+            <p class="text-xs text-gold-300/60 mt-3 italic">— Romain, Capitaine PSG</p>
+          </div>
+
+          <!-- KPIs équipe -->
+          <div>
+            <h3 class="font-cinzel text-gold-500 tracking-[0.3em] text-xs mb-3">⚜ KPIS ÉQUIPE PSG</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <template x-for="kpi in teamKpis" :key="kpi.label">
+                <div class="glass-panel rounded-xl p-4">
+                  <div class="text-2xl mb-2" x-text="kpi.icon"></div>
+                  <div class="text-[10px] text-gold-300/60 uppercase tracking-widest font-cinzel" x-text="kpi.label"></div>
+                  <div class="font-display text-2xl mt-1 text-white" x-text="formatKpi(kpi.current) + ' / ' + formatKpi(kpi.target)"></div>
+                  <div class="progress-bar mt-2">
+                    <div class="progress-fill" :class="progressClass(kpi.current, kpi.target)" :style="`width: ${Math.min(100, (kpi.current / kpi.target) * 100)}%`"></div>
+                  </div>
+                  <div class="text-xs text-gold-500 mt-1 font-bold" x-text="Math.round((kpi.current / kpi.target) * 100) + '%'"></div>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- Burndown chart -->
+          <div class="glass-panel rounded-2xl p-5">
+            <h3 class="font-cinzel text-gold-500 tracking-[0.3em] text-xs mb-4">⚜ BURNDOWN MARGE</h3>
+            <canvas id="burndownChart" height="120"></canvas>
+          </div>
+        </section>
+
+        <!-- ====================== DASHBOARD (FUT cards FIFA-style) ====================== -->
+        <section x-show="activeTab === 'dashboard'" class="space-y-6 animate-rise">
+          <div>
+            <h2 class="font-display text-3xl text-white">🏆 Joueurs PSG</h2>
+            <p class="text-gold-300/60 text-sm">Stats individuelles · Cards style FIFA Ultimate Team</p>
+          </div>
+
+          <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
+            <template x-for="player in players" :key="player.id">
+              <div class="fut-card p-5 sm:p-6" :class="player.isCaptain ? 'captain' : ''">
+                <!-- Top : Rating + Position + Photo -->
+                <div class="flex gap-4 sm:gap-5">
+                  <!-- Left column: rating + position + flag -->
+                  <div class="flex flex-col items-center justify-start pt-2 min-w-[68px]">
+                    <div class="fut-rating" x-text="player.rating"></div>
+                    <div class="fut-position mt-1" x-text="player.position"></div>
+                    <div class="text-2xl mt-3 gold-glow">⚜</div>
+                    <div class="text-[9px] font-cinzel text-cyan-400 tracking-widest mt-1" style="color:#00E5FF">PSG</div>
+                  </div>
+                  <!-- Right column: large player photo -->
+                  <div class="flex-1 relative">
+                    <div class="absolute inset-0 rounded-2xl" style="background: radial-gradient(ellipse at center, rgba(255,196,61,0.15) 0%, transparent 70%);"></div>
+                    <img :src="player.photoUrl" :alt="player.name" class="relative w-full h-44 sm:h-52 object-cover object-top rounded-2xl border border-gold-500/20" onerror="this.src='https://api.dicebear.com/7.x/initials/svg?seed='+this.alt+'&backgroundColor=000814&textColor=FFC43D'" />
+                    <template x-if="player.isCaptain">
+                      <div class="absolute top-2 right-2 bg-gradient-to-br from-gold-300 to-gold-700 text-navy-900 font-display text-[10px] px-2 py-1 rounded shadow-lg uppercase tracking-widest">⚜ CAP</div>
+                    </template>
+                  </div>
+                </div>
+
+                <!-- Name -->
+                <div class="mt-4 text-center border-t border-gold-500/20 pt-3">
+                  <div class="fut-name" x-text="player.name"></div>
+                  <p class="text-[10px] text-gold-300/60 font-cinzel uppercase tracking-widest mt-0.5" x-text="player.role"></p>
+                </div>
+
+                <!-- Stats overlay (FIFA style 2-column grid) -->
+                <div class="mt-4 grid grid-cols-2 gap-x-4 gap-y-2">
+                  <template x-for="kpi in player.kpis" :key="kpi.key">
+                    <div>
+                      <div class="flex justify-between items-baseline mb-1">
+                        <span class="fut-stat-key" x-text="kpi.key"></span>
+                        <span class="fut-stat-value" x-text="formatKpi(kpi.current) + '/' + formatKpi(kpi.target)"></span>
+                      </div>
+                      <div class="progress-bar">
+                        <div class="progress-fill" :class="(progressClass(kpi.current, kpi.target)) + ((kpi.current / kpi.target) >= 0.95 ? ' glowing' : '')" :style="`width: ${Math.min(100, (kpi.current / kpi.target) * 100)}%`"></div>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+
+                <!-- Marge brute bar (commerciaux only — players with MAR key) -->
+                <template x-if="player.kpis.some(k => k.key === 'MAR')">
+                  <div class="mt-5 p-3 rounded-xl" style="background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,8,20,0.8)); border: 1px solid rgba(255,196,61,0.2);">
+                    <div class="flex justify-between items-baseline mb-2">
+                      <span class="fut-stat-key" style="color:#FFC43D;text-shadow:0 0 8px rgba(255,196,61,0.4)">⚜ MARGE BRUTE</span>
+                      <span class="font-display text-2xl gold-glow" x-text="formatKpi(player.kpis.find(k => k.key === 'MAR').current) + '€'"></span>
+                    </div>
+                    <div class="marge-bar">
+                      <div class="marge-fill" :style="`width: ${Math.min(100, (player.kpis.find(k => k.key === 'MAR').current / 30000) * 100)}%`"></div>
+                    </div>
+                    <div class="flex justify-between text-[10px] mt-1.5 font-cinzel tracking-widest">
+                      <span class="text-cyan-400" style="color:#00E5FF" x-text="Math.round((player.kpis.find(k => k.key === 'MAR').current / 30000) * 100) + '% atteint'"></span>
+                      <span class="text-gold-300/60">CIBLE 30 000 €</span>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </template>
+          </div>
+
+          <!-- Total équipe marge brute -->
+          <div class="glass-panel rounded-2xl p-5 mt-6">
+            <div class="flex justify-between items-baseline mb-3">
+              <h3 class="font-display text-xl gold-glow">⚜ MARGE BRUTE ÉQUIPE</h3>
+              <span class="font-display text-3xl gold-glow" x-text="formatKpi(teamMarge()) + ' / 90 000 €'"></span>
+            </div>
+            <div class="marge-bar" style="height:18px">
+              <div class="marge-fill" :style="`width: ${Math.min(100, (teamMarge() / 90000) * 100)}%`"></div>
+            </div>
+            <div class="flex justify-between text-xs mt-2 font-cinzel tracking-widest">
+              <span style="color:#00E5FF" x-text="Math.round((teamMarge() / 90000) * 100) + '% objectif équipe'"></span>
+              <span class="text-gold-300/60">3 commerciaux × 30K€</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ====================== PIPELINE ====================== -->
+        <section x-show="activeTab === 'pipeline'" class="space-y-6 animate-rise">
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="font-display text-3xl text-white">🎯 Pipeline</h2>
+              <p class="text-gold-300/60 text-sm">Tous les deals en cours</p>
+            </div>
+            <button @click="newLeadModal = true" class="btn-gold px-4 py-2 rounded-lg text-sm uppercase tracking-wider">⚜ + Nouveau lead</button>
+          </div>
+
+          <!-- Filter -->
+          <div class="flex gap-2 overflow-x-auto scroll-hide pb-1">
+            <button @click="pipelineFilter = 'all'" :class="pipelineFilter === 'all' ? 'btn-gold' : 'btn-navy'" class="px-3 py-1.5 rounded-lg text-xs whitespace-nowrap font-bold uppercase tracking-wider">Toute l'équipe</button>
+            <template x-for="player in players" :key="player.id">
+              <button @click="pipelineFilter = player.id" :class="pipelineFilter === player.id ? 'btn-gold' : 'btn-navy'" class="px-3 py-1.5 rounded-lg text-xs whitespace-nowrap font-bold uppercase tracking-wider" x-text="player.name"></button>
+            </template>
+          </div>
+
+          <!-- Kanban -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <template x-for="stage in pipelineStages" :key="stage.id">
+              <div class="glass-panel rounded-xl p-3 min-h-[200px]">
+                <h3 class="font-display text-sm mb-3 flex justify-between items-center text-gold-500">
+                  <span x-text="stage.label"></span>
+                  <span class="text-[10px] text-gold-300/50 font-cinzel" x-text="filteredLeads(stage.id).length"></span>
+                </h3>
+                <div class="space-y-2">
+                  <template x-for="lead in filteredLeads(stage.id)" :key="lead.id">
+                    <div @click="editLead(lead)" class="bg-navy-900/60 hover:bg-navy-700/60 border border-gold-500/10 hover:border-gold-500/30 rounded-lg p-3 cursor-pointer transition">
+                      <div class="font-bold text-sm text-white" x-text="lead.companyName"></div>
+                      <div class="text-[11px] text-gold-300/60 mt-0.5" x-text="lead.contactName"></div>
+                      <div class="text-xs text-gold-500 mt-2 font-bold" x-show="lead.estimatedMargin" x-text="lead.estimatedMargin + ' €'"></div>
+                      <div class="text-[10px] text-gold-300/40 mt-1 font-cinzel uppercase tracking-wider" x-text="lead.assignedTo"></div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+          </div>
+        </section>
+
+        <!-- ====================== ARSENAL (resources) ====================== -->
+        <section x-show="activeTab === 'arsenal'" class="space-y-6 animate-rise">
+          <div>
+            <h2 class="font-display text-3xl text-white">⚔️ Arsenal</h2>
+            <p class="text-gold-300/60 text-sm">Vos armes pour cartonner ce mois-ci</p>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <template x-for="resource in arsenalResources" :key="resource.id">
+              <a :href="resource.path" target="_blank" class="glass-panel rounded-xl p-5 hover:border-gold-500/40 transition block group">
+                <div class="text-3xl mb-2" x-text="resource.icon"></div>
+                <h3 class="font-display text-xl text-white group-hover:text-gold-500 transition" x-text="resource.title"></h3>
+                <p class="text-sm text-gold-300/60 mt-1" x-text="resource.description"></p>
+                <div class="text-[10px] text-gold-500 font-cinzel uppercase tracking-widest mt-3">⚜ Ouvrir →</div>
+              </a>
+            </template>
+          </div>
+        </section>
+
+        <!-- ====================== DAILY ====================== -->
+        <section x-show="activeTab === 'daily'" class="space-y-6 animate-rise">
+          <div>
+            <h2 class="font-display text-3xl text-white">📅 Daily Check-in</h2>
+            <p class="text-gold-300/60 text-sm">30 sec chaque matin pour aligner l'équipe</p>
+          </div>
+
+          <div class="glass-panel rounded-2xl p-6 space-y-4">
+            <div>
+              <label class="text-[11px] text-gold-300/70 font-cinzel uppercase tracking-widest">⚜ Hier j'ai fait</label>
+              <textarea x-model="dailyForm.yesterday" class="w-full mt-2 input-navy rounded-lg p-3 text-sm" rows="2" placeholder="Ex: 32 actions CRM, 2 RDV physiques, 1 propal envoyée..."></textarea>
+            </div>
+            <div>
+              <label class="text-[11px] text-gold-300/70 font-cinzel uppercase tracking-widest">⚜ Aujourd'hui je vise</label>
+              <textarea x-model="dailyForm.today" class="w-full mt-2 input-navy rounded-lg p-3 text-sm" rows="2" placeholder="Ex: 30 actions, 1 RDV physique, closing avec X..."></textarea>
+            </div>
+            <div>
+              <label class="text-[11px] text-gold-300/70 font-cinzel uppercase tracking-widest">⚜ Blocage / besoin</label>
+              <textarea x-model="dailyForm.blocker" class="w-full mt-2 input-navy rounded-lg p-3 text-sm" rows="2" placeholder="Aucun / objection prix sur prospect Y / besoin pricing pack vidéo..."></textarea>
+            </div>
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="text-[11px] text-gold-300/70 font-cinzel uppercase tracking-widest">Mood</label>
+                <input type="number" min="1" max="5" x-model.number="dailyForm.mood" class="w-full mt-2 input-navy rounded-lg p-3" />
+              </div>
+              <div class="col-span-2">
+                <label class="text-[11px] text-gold-300/70 font-cinzel uppercase tracking-widest">Vibe</label>
+                <input type="text" x-model="dailyForm.vibe" class="w-full mt-2 input-navy rounded-lg p-3" placeholder="🔥💪 / on fait fumer ARSENAL" />
+              </div>
+            </div>
+            <button @click="submitDaily()" class="w-full btn-gold px-6 py-3 rounded-xl uppercase tracking-wider">⚜ Envoyer mon check-in</button>
+          </div>
+
+          <!-- Recent check-ins (captain only) -->
+          <template x-if="isCaptain">
+            <div class="glass-panel rounded-2xl p-6">
+              <h3 class="font-display text-xl text-gold-500 mb-4">📋 Check-ins équipe</h3>
+              <div class="space-y-3">
+                <template x-for="checkin in recentCheckins" :key="checkin.id">
+                  <div class="bg-navy-900/60 border border-gold-500/10 rounded-lg p-4 text-sm">
+                    <div class="flex justify-between text-[11px] text-gold-300/60 font-cinzel uppercase tracking-wider mb-2">
+                      <span class="text-gold-500" x-text="'⚜ ' + checkin.player"></span>
+                      <span x-text="checkin.date"></span>
+                    </div>
+                    <p class="text-xs text-white/80"><span class="text-gold-300/50 mr-1">Hier:</span> <span x-text="checkin.yesterday"></span></p>
+                    <p class="text-xs text-white/80 mt-1"><span class="text-gold-300/50 mr-1">Aujourd'hui:</span> <span x-text="checkin.today"></span></p>
+                    <p x-show="checkin.blocker && checkin.blocker !== 'Aucun'" class="text-xs text-warning mt-1"><span class="text-warning/70 mr-1">⚠ Blocage:</span> <span x-text="checkin.blocker"></span></p>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+        </section>
+
+        <!-- ====================== STRATEGY (captain only) ====================== -->
+        <section x-show="activeTab === 'strategy' && isCaptain" class="space-y-6 animate-rise">
+          <div>
+            <h2 class="font-display text-3xl text-white">🎖️ Stratégie Capitaine</h2>
+            <p class="text-gold-300/60 text-sm">Page restreinte · plans, math, coaching individuel</p>
+          </div>
+
+          <!-- Plan 4 semaines -->
+          <div class="glass-panel rounded-2xl p-6">
+            <h3 class="font-display text-xl text-gold-500 mb-4">⚜ Plan 4 semaines</h3>
+            <div class="space-y-4 text-sm">
+              <div class="border-l-4 border-gold-500/50 pl-4">
+                <div class="font-bold text-white">Semaine 1 (5-11 mai) — Setup &amp; momentum</div>
+                <p class="text-gold-300/60 text-xs mt-1">Lundi pitch équipe + cockpit. Activation 50 clients existants pour parrainage. 30 prospects/joueur identifiés. Premier closing avant vendredi.</p>
+              </div>
+              <div class="border-l-4 border-gold-500/50 pl-4">
+                <div class="font-bold text-white">Semaine 2 (12-18 mai) — Volume RDV</div>
+                <p class="text-gold-300/60 text-xs mt-1">Push prospection (5+ RDV/joueur). 4 ventes équipe. Coffee équipe lundi pour booster moral. 1-1 individuel chaque commercial.</p>
+              </div>
+              <div class="border-l-4 border-gold-500/50 pl-4">
+                <div class="font-bold text-white">Semaine 3 (19-25 mai) — Closing focus</div>
+                <p class="text-gold-300/60 text-xs mt-1">Training closing collectif lundi. Push packs upsell (Site+SEO+SEA+Photos = haute marge). 5 ventes équipe.</p>
+              </div>
+              <div class="border-l-4 border-gold-500 pl-4 animate-pulse-gold">
+                <div class="font-bold text-gold-500">Semaine 4 (26-31 mai) — Sprint final ⚜</div>
+                <p class="text-gold-300/60 text-xs mt-1">Sprint final 6 ventes. Restau équipe vendredi 30 si on est devant. Bilan victoire 31 mai.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Math -->
+          <div class="glass-panel rounded-2xl p-6">
+            <h3 class="font-display text-xl text-gold-500 mb-4">🧮 Math du challenge</h3>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div><span class="text-gold-300/60 font-cinzel text-[10px] uppercase tracking-widest block mb-1">Conversion RDV→Vente</span> <span class="font-display text-2xl text-white">10-20%</span></div>
+              <div><span class="text-gold-300/60 font-cinzel text-[10px] uppercase tracking-widest block mb-1">Marge moyenne</span> <span class="font-display text-2xl text-white">4-20K€</span></div>
+              <div><span class="text-gold-300/60 font-cinzel text-[10px] uppercase tracking-widest block mb-1">RDV cible 15%</span> <span class="font-display text-2xl text-gold-500">107</span></div>
+              <div><span class="text-gold-300/60 font-cinzel text-[10px] uppercase tracking-widest block mb-1">Marge cible totale</span> <span class="font-display text-2xl text-gold-500">120K€</span></div>
+            </div>
+            <div class="mt-4 p-4 bg-warning/10 border border-warning/30 rounded-lg">
+              <p class="text-[10px] text-warning font-cinzel uppercase tracking-widest mb-1">⚠ Levier critique</p>
+              <p class="text-xs text-white/80">Booster taux de closing de 10% à 15-20% via training + scripts. Et pousser packs hautes marges (Site+SEO+SEA+Photos bundle 8-12K€).</p>
+            </div>
+          </div>
+
+          <!-- 1-1 notes -->
+          <div class="glass-panel rounded-2xl p-6">
+            <h3 class="font-display text-xl text-gold-500 mb-4">👥 Notes 1-1</h3>
+            <p class="text-[11px] text-gold-300/60 font-cinzel uppercase tracking-widest mb-3">⚜ Coaching individuel hebdomadaire</p>
+            <div class="space-y-2">
+              <template x-for="player in players.filter(p => p.id !== currentUserId)" :key="player.id">
+                <button @click="open1on1(player)" class="w-full text-left bg-navy-900/60 hover:bg-navy-700/60 border border-gold-500/10 hover:border-gold-500/30 rounded-lg p-4 text-sm transition">
+                  <span class="font-bold text-white" x-text="player.name"></span>
+                  <span class="text-[11px] text-gold-300/50 ml-2" x-text="' · dernière 1-1: ' + (player.last1on1 || 'aucune')"></span>
+                </button>
+              </template>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- New Lead Modal -->
+      <div x-show="newLeadModal" x-transition.opacity class="fixed inset-0 z-50 bg-navy-950/90 backdrop-blur-sm flex items-end sm:items-center justify-center p-4" @click.self="newLeadModal = false">
+        <div class="glass-panel border-gold-500/30 rounded-2xl p-6 w-full max-w-lg space-y-4">
+          <h3 class="font-display text-2xl text-gold-500">⚜ Nouveau lead</h3>
+          <input x-model="newLead.companyName" placeholder="Nom entreprise" class="w-full input-navy rounded-lg p-3" />
+          <input x-model="newLead.contactName" placeholder="Contact" class="w-full input-navy rounded-lg p-3" />
+          <input x-model="newLead.phone" placeholder="Téléphone" class="w-full input-navy rounded-lg p-3" />
+          <input x-model="newLead.email" placeholder="Email" class="w-full input-navy rounded-lg p-3" />
+          <select x-model="newLead.sector" class="w-full input-navy rounded-lg p-3">
+            <option value="">Secteur</option>
+            <option>Boulangerie/Restauration</option>
+            <option>BTP/Bâtiment</option>
+            <option>Beauté/Coiffure</option>
+            <option>Auto/Garage</option>
+            <option>Services à la personne</option>
+            <option>Autre artisanat</option>
+          </select>
+          <input type="number" x-model.number="newLead.estimatedMargin" placeholder="Marge estimée (€)" class="w-full input-navy rounded-lg p-3" />
+          <textarea x-model="newLead.notes" placeholder="Notes (besoin identifié, contexte...)" class="w-full input-navy rounded-lg p-3" rows="3"></textarea>
+          <div class="flex gap-2">
+            <button @click="newLeadModal = false" class="flex-1 btn-navy px-4 py-3 rounded-lg uppercase tracking-wider text-sm">Annuler</button>
+            <button @click="createLead()" class="flex-1 btn-gold px-4 py-3 rounded-lg uppercase tracking-wider text-sm">⚜ Créer</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </template>
+
+  <!-- ============================ COCKPIT LOGIC ============================ -->
+  <script>
+    function cockpit() {
+      return {
+        user: null,
+        authError: '',
+        activeTab: 'home',
+        isCaptain: false,
+        currentUserId: '',
+        dayOfChallenge: 1,
+
+        tabs: [
+          { id: 'home', label: 'Match', icon: '⚽' },
+          { id: 'dashboard', label: 'Joueurs', icon: '🏆' },
+          { id: 'pipeline', label: 'Pipeline', icon: '🎯' },
+          { id: 'arsenal', label: 'Arsenal', icon: '⚔️' },
+          { id: 'daily', label: 'Daily', icon: '📅' },
+          { id: 'strategy', label: 'Stratégie', icon: '🎖️' },
+        ],
+
+        psgScore: 0,
+        arsenalScore: 0,
+
+        teamKpis: [
+          { label: 'Actions CRM', icon: '📞', current: 0, target: 2400 },
+          { label: 'RDV', icon: '🤝', current: 0, target: 80 },
+          { label: 'Ventes', icon: '🏆', current: 0, target: 16 },
+          { label: 'Marge €', icon: '💰', current: 0, target: 120000 },
+        ],
+
+        players: [
+          { id: 'romain',  name: 'Romain',  role: 'Capitaine · Technico',   position: 'TEC', rating: 88, score: 0, isCaptain: true,  photoUrl: 'assets/img/players/romain-psg.png',  kpis: [
+            { label: 'Ventes parrainage', current: 0, target: 2, key: 'PAR' },
+            { label: 'VA',                current: 0, target: 4, key: 'VA' },
+          ]},
+          { id: 'enzo',    name: 'Enzo',    role: 'Striker · Commercial',   position: 'ST',  rating: 85, score: 0, isCaptain: false, photoUrl: 'assets/img/players/enzo-psg.png',    kpis: [
+            { label: 'Actions CRM', current: 0, target: 600,   key: 'CRM' },
+            { label: 'RDV',         current: 0, target: 20,    key: 'RDV' },
+            { label: 'Ventes',      current: 0, target: 4,     key: 'VEN' },
+            { label: 'Marge',       current: 0, target: 30000, key: 'MAR' },
+          ]},
+          { id: 'alex',    name: 'Alex',    role: 'Midfielder · Commercial',position: 'MID', rating: 84, score: 0, isCaptain: false, photoUrl: 'assets/img/players/alex-psg.png',    kpis: [
+            { label: 'Actions CRM', current: 0, target: 600,   key: 'CRM' },
+            { label: 'RDV',         current: 0, target: 20,    key: 'RDV' },
+            { label: 'Ventes',      current: 0, target: 4,     key: 'VEN' },
+            { label: 'Marge',       current: 0, target: 30000, key: 'MAR' },
+          ]},
+          { id: 'adrien',  name: 'Adrien',  role: 'Defender · Commercial',  position: 'DEF', rating: 83, score: 0, isCaptain: false, photoUrl: 'assets/img/players/adrien-psg.png',  kpis: [
+            { label: 'Actions CRM', current: 0, target: 600,   key: 'CRM' },
+            { label: 'RDV',         current: 0, target: 20,    key: 'RDV' },
+            { label: 'Ventes',      current: 0, target: 4,     key: 'VEN' },
+            { label: 'Marge',       current: 0, target: 30000, key: 'MAR' },
+          ]},
+        ],
+
+        pipelineStages: [
+          { id: 'lead', label: '🌱 Lead' },
+          { id: 'contact', label: '📞 1er contact' },
+          { id: 'rdv', label: '📅 RDV pris' },
+          { id: 'propal', label: '📄 Propal' },
+          { id: 'closing', label: '🤝 Closing' },
+          { id: 'won', label: '🏆 Won' },
+        ],
+        leads: [],
+        pipelineFilter: 'all',
+
+        newLeadModal: false,
+        newLead: { companyName: '', contactName: '', phone: '', email: '', sector: '', estimatedMargin: 0, notes: '', stage: 'lead' },
+
+        dailyForm: { yesterday: '', today: '', blocker: '', mood: 4, vibe: '🔥' },
+        recentCheckins: [],
+
+        arsenalResources: [
+          { id: 1, title: 'Scripts d\'appel artisan', description: 'Intro · qualif · prise de RDV · relance', icon: '📞', path: 'docs/scripts-appel-artisans.md' },
+          { id: 2, title: 'Top 10 objections traitées', description: 'Prix · concurrent · pas le moment · décideur absent', icon: '🛡️', path: 'docs/traitement-objections.md' },
+          { id: 3, title: 'Stratégie parrainage', description: 'Process activation clients existants + offre incitative', icon: '🤝', path: 'docs/strategie-parrainage.md' },
+          { id: 4, title: 'Templates SMS / Email', description: 'Premier contact, relance J+3, post-RDV, demande référé', icon: '✉️', path: 'docs/templates-comm.md' },
+          { id: 5, title: 'Listes prospects Clermont', description: 'Artisans qualifiés via API gov + Pappers', icon: '📋', path: 'docs/prospects-clermont.md' },
+          { id: 6, title: 'Plan 4 semaines détaillé', description: 'Stratégie semaine par semaine · objectifs intermédiaires', icon: '🗓️', path: 'docs/plan-action-4-semaines.md' },
+          { id: 7, title: 'Pricing / Packs Linkeo', description: 'Site · SEO · SEA · Photos · Bundles haute marge', icon: '💰', path: 'docs/pricing-packs.md' },
+          { id: 8, title: 'Pitch lundi matin', description: 'Le speech motivation pour rallier l\'équipe le 12 mai', icon: '🎤', path: 'docs/pitch-monday-morning.md' },
+        ],
+
+        todayMotto: 'Aujourd\'hui on transforme un appel en RDV et un RDV en vente. ARSENAL ne nous voit pas venir.',
+
+        // ============ INIT ============
+        async init() {
+          const isDemo = window.location.search.includes('demo') || window.location.protocol === 'file:';
+          if (isDemo) {
+            this.user = { displayName: 'Romain (Capitaine)', email: 'romain@psg-test.local', photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Romain&backgroundColor=001E3C' };
+            this.currentUserId = 'romain';
+            this.isCaptain = true;
+            this.loadDemoData();
+          } else {
+            window.addEventListener('firebase-ready', () => this.setupAuth());
+          }
+          const start = new Date('2026-05-01');
+          const today = new Date();
+          this.dayOfChallenge = Math.floor((today - start) / (1000 * 60 * 60 * 24)) + 1;
+          this.initChart();
+        },
+
+        loadDemoData() {
+          // Score initial 0/0 — challenge n'a pas commencé
+          this.psgScore = 0;
+          this.arsenalScore = 0;
+          this.teamKpis = [
+            { label: 'Actions CRM',  icon: '📞', current: 0, target: 1800 },  // 600 × 3 commerciaux
+            { label: 'RDV',          icon: '🤝', current: 0, target: 60 },     // 20 × 3
+            { label: 'Ventes',       icon: '🏆', current: 0, target: 12 },     // 4 × 3
+            { label: 'Marge brute',  icon: '💰', current: 0, target: 90000 }, // 30K × 3
+          ];
+          // Romain (technico capitaine) — 2 ventes parrainage + 4 VA
+          this.players[0].score = 0; this.players[0].kpis = [
+            { label: 'Ventes parrainage', current: 0, target: 2, key: 'PAR' },
+            { label: 'VA',                current: 0, target: 4, key: 'VA' },
+          ];
+          // Enzo (commercial) — 30K marge
+          this.players[1].score = 0; this.players[1].kpis = [
+            { label: 'Actions CRM', current: 0, target: 600,   key: 'CRM' },
+            { label: 'RDV',         current: 0, target: 20,    key: 'RDV' },
+            { label: 'Ventes',      current: 0, target: 4,     key: 'VEN' },
+            { label: 'Marge',       current: 0, target: 30000, key: 'MAR' },
+          ];
+          // Alex (commercial) — 30K marge
+          this.players[2].score = 0; this.players[2].kpis = [
+            { label: 'Actions CRM', current: 0, target: 600,   key: 'CRM' },
+            { label: 'RDV',         current: 0, target: 20,    key: 'RDV' },
+            { label: 'Ventes',      current: 0, target: 4,     key: 'VEN' },
+            { label: 'Marge',       current: 0, target: 30000, key: 'MAR' },
+          ];
+          // Adrien (commercial) — 30K marge
+          this.players[3].score = 0; this.players[3].kpis = [
+            { label: 'Actions CRM', current: 0, target: 600,   key: 'CRM' },
+            { label: 'RDV',         current: 0, target: 20,    key: 'RDV' },
+            { label: 'Ventes',      current: 0, target: 4,     key: 'VEN' },
+            { label: 'Marge',       current: 0, target: 30000, key: 'MAR' },
+          ];
+
+          this.leads = [
+            { id: '1', companyName: 'Boulangerie Martin', contactName: 'M. Martin', stage: 'lead', estimatedMargin: 6500, sector: 'Boulangerie', assignedTo: 'Romain', assignedToId: 'romain' },
+            { id: '2', companyName: 'Garage Dubois', contactName: 'M. Dubois', stage: 'contact', estimatedMargin: 8000, sector: 'Auto', assignedTo: 'Enzo', assignedToId: 'enzo' },
+            { id: '3', companyName: 'Coiffure Léa', contactName: 'Mme Léa', stage: 'rdv', estimatedMargin: 5500, sector: 'Beauté', assignedTo: 'Alex', assignedToId: 'alex' },
+            { id: '4', companyName: 'Plomberie Auvergne', contactName: 'M. Roche', stage: 'rdv', estimatedMargin: 9500, sector: 'BTP', assignedTo: 'Romain', assignedToId: 'romain' },
+            { id: '5', companyName: 'Resto Le Volcan', contactName: 'Mme Bernard', stage: 'propal', estimatedMargin: 7800, sector: 'Restauration', assignedTo: 'Enzo', assignedToId: 'enzo' },
+            { id: '6', companyName: 'Esthétique Solenne', contactName: 'Mme Solenne', stage: 'closing', estimatedMargin: 6200, sector: 'Beauté', assignedTo: 'Romain', assignedToId: 'romain' },
+            { id: '7', companyName: 'Carrosserie Pro', contactName: 'M. Aulnay', stage: 'won', estimatedMargin: 8500, sector: 'Auto', assignedTo: 'Romain', assignedToId: 'romain' },
+            { id: '8', companyName: 'Boulangerie Étoile', contactName: 'M. Petit', stage: 'won', estimatedMargin: 7200, sector: 'Boulangerie', assignedTo: 'Alex', assignedToId: 'alex' },
+          ];
+
+          this.recentCheckins = [
+            { id: '1', player: 'Enzo', date: '2026-05-15', yesterday: '32 actions CRM, 2 RDV, 1 propal envoyée Resto Le Volcan', today: 'Closing prévu Le Volcan + 30 actions CRM', blocker: 'Aucun', mood: 4 },
+            { id: '2', player: 'Alex', date: '2026-05-15', yesterday: '28 actions, 1 RDV physique avec Coiffure Léa', today: '2 RDV physiques + activation parrainage', blocker: 'Objection prix sur Coiffure Léa', mood: 3 },
+            { id: '3', player: 'Adrien', date: '2026-05-15', yesterday: 'Suivi technique 4 clients, 1 VA en cours', today: 'Push parrainage 5 clients existants', blocker: 'Aucun', mood: 5 },
+          ];
+        },
+
+        setupAuth() {
+          const fb = window.firebase;
+          fb.onAuthStateChanged(fb.auth, (user) => {
+            if (user) {
+              if (fb.PSG_TEAM_EMAILS.includes(user.email) || user.email.endsWith('@psg-test.local')) {
+                this.user = user;
+                this.currentUserId = user.email.split('@')[0].toLowerCase();
+                this.isCaptain = this.currentUserId === 'romain' || user.email.includes('romain');
+                this.loadData();
+              } else {
+                this.authError = 'Email non autorisé. Contacter Romain.';
+                fb.signOut(fb.auth);
+              }
+            } else { this.user = null; }
+          });
+        },
+
+        async signIn() {
+          const fb = window.firebase;
+          try { await fb.signInWithPopup(fb.auth, new fb.GoogleAuthProvider()); }
+          catch (e) { this.authError = e.message; }
+        },
+
+        async signOutUser() { await window.firebase.signOut(window.firebase.auth); },
+
+        async loadData() { /* TODO Firestore live */ },
+
+        // ============ HELPERS ============
+        formatKpi(v) {
+          if (v >= 100000) return Math.round(v / 1000) + 'K';
+          if (v >= 10000) return (v / 1000).toFixed(0) + 'K';
+          return v.toLocaleString('fr');
+        },
+        progressClass(cur, tgt) {
+          const r = cur / tgt;
+          if (r >= 0.7) return 'progress-high';
+          if (r >= 0.4) return 'progress-mid';
+          return 'progress-low';
+        },
+        teamMarge() {
+          return this.players.reduce((sum, p) => {
+            const marKpi = p.kpis.find(k => k.key === 'MAR');
+            return sum + (marKpi ? marKpi.current : 0);
+          }, 0);
+        },
+
+        filteredLeads(stageId) {
+          let leads = this.leads.filter(l => l.stage === stageId);
+          if (this.pipelineFilter !== 'all') leads = leads.filter(l => l.assignedToId === this.pipelineFilter);
+          return leads;
+        },
+
+        async createLead() {
+          const lead = { ...this.newLead, id: Date.now().toString(), stage: 'lead', assignedTo: this.user.displayName, assignedToId: this.currentUserId, createdAt: new Date() };
+          this.leads.push(lead);
+          this.newLead = { companyName: '', contactName: '', phone: '', email: '', sector: '', estimatedMargin: 0, notes: '', stage: 'lead' };
+          this.newLeadModal = false;
+        },
+
+        editLead(lead) { console.log('edit', lead); },
+
+        async submitDaily() {
+          if (!this.dailyForm.today) return alert('Note tes objectifs du jour.');
+          this.recentCheckins.unshift({ ...this.dailyForm, player: this.user.displayName, playerId: this.currentUserId, date: new Date().toISOString().slice(0, 10), id: Date.now().toString() });
+          this.dailyForm = { yesterday: '', today: '', blocker: '', mood: 4, vibe: '🔥' };
+          alert('⚜ Check-in enregistré. Bonne journée !');
+        },
+
+        open1on1(player) { alert(`1-1 avec ${player.name} — feature en cours, prends notes papier`); },
+
+        // ============ CHART ============
+        initChart() {
+          const wait = setInterval(() => {
+            if (window.Chart) {
+              clearInterval(wait);
+              const ctx = document.getElementById('burndownChart');
+              if (!ctx) return;
+              const isDemo = window.location.search.includes('demo') || window.location.protocol === 'file:';
+              new Chart(ctx, {
+                type: 'line',
+                data: {
+                  labels: ['S1', 'S2', 'S3', 'S4'],
+                  datasets: [
+                    { label: 'Cible PSG', data: [30000, 60000, 90000, 120000], borderColor: '#FFC43D', backgroundColor: 'rgba(255,196,61,0.1)', fill: true, tension: 0.3, borderWidth: 2 },
+                    { label: 'Réel PSG', data: isDemo ? [12000, 32000, 52000, null] : [0, 0, 0, 0], borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.15)', fill: true, tension: 0.3, borderWidth: 3 },
+                    { label: 'ARSENAL (estimé)', data: isDemo ? [9000, 24000, 41000, null] : [0, 0, 0, 0], borderColor: '#DA291C', backgroundColor: 'rgba(218,41,28,0.05)', fill: false, borderDash: [6, 6], tension: 0.3, borderWidth: 2 },
+                  ],
+                },
+                options: {
+                  responsive: true,
+                  plugins: { legend: { labels: { color: '#FFE57F', font: { size: 11, family: 'Inter' } } } },
+                  scales: {
+                    x: { ticks: { color: '#FFE57F', font: { family: 'Cinzel' } }, grid: { color: 'rgba(255,196,61,0.05)' } },
+                    y: { ticks: { color: '#FFE57F', font: { family: 'Inter' }, callback: (v) => (v / 1000) + 'K€' }, grid: { color: 'rgba(255,196,61,0.05)' } }
+                  },
+                },
+              });
+            }
+          }, 100);
+        },
+      };
+    }
+  </script>
+
+</body>
+</html>

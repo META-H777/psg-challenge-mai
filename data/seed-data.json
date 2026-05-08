@@ -1,0 +1,88 @@
+{
+  "_comment": "Seed data PSG Challenge Mai 2026 — à charger dans Firestore vendredi setup",
+  "players": {
+    "romain": {
+      "id": "romain",
+      "name": "Romain",
+      "role": "Capitaine · Commercial",
+      "email": "REPLACE_ME@gmail.com",
+      "isCaptain": true,
+      "kpiTargets": {
+        "actionsCRM": 600,
+        "rdv": 20,
+        "ventes": 4,
+        "marge": 30000
+      }
+    },
+    "enzo": {
+      "id": "enzo",
+      "name": "Enzo",
+      "role": "Commercial",
+      "email": "REPLACE_ME@gmail.com",
+      "isCaptain": false,
+      "kpiTargets": {
+        "actionsCRM": 600,
+        "rdv": 20,
+        "ventes": 4,
+        "marge": 30000
+      }
+    },
+    "alex": {
+      "id": "alex",
+      "name": "Alex",
+      "role": "Commercial",
+      "email": "REPLACE_ME@gmail.com",
+      "isCaptain": false,
+      "kpiTargets": {
+        "actionsCRM": 600,
+        "rdv": 20,
+        "ventes": 4,
+        "marge": 30000
+      }
+    },
+    "adrien": {
+      "id": "adrien",
+      "name": "Adrien",
+      "role": "Technico",
+      "email": "REPLACE_ME@gmail.com",
+      "isCaptain": false,
+      "kpiTargets": {
+        "ventesParrainage": 2,
+        "VA": 4
+      }
+    }
+  },
+  "teamTargets": {
+    "actionsCRM": 2400,
+    "rdv": 80,
+    "ventes": 16,
+    "marge": 120000,
+    "ventesParrainage": 2,
+    "VA": 4
+  },
+  "challenge": {
+    "name": "PSG vs ARSENAL — Mai 2026",
+    "startDate": "2026-05-01",
+    "endDate": "2026-05-31",
+    "officialKickoff": "2026-05-12",
+    "captain": "Romain",
+    "opponent": "ARSENAL (Geff)"
+  },
+  "pipelineStages": [
+    { "id": "lead", "label": "🌱 Lead", "order": 1 },
+    { "id": "contact", "label": "📞 1er contact", "order": 2 },
+    { "id": "rdv", "label": "📅 RDV pris", "order": 3 },
+    { "id": "propal", "label": "📄 Propal", "order": 4 },
+    { "id": "closing", "label": "🤝 Closing", "order": 5 },
+    { "id": "won", "label": "🏆 Won", "order": 6 },
+    { "id": "lost", "label": "❌ Lost", "order": 7 }
+  ],
+  "mottos": [
+    "Aujourd'hui on transforme un appel en RDV et un RDV en vente. ARSENAL ne nous voit pas venir.",
+    "Chaque action CRM nous rapproche de la 2ème étoile. Pas de pause.",
+    "Le closing rate à 18% c'est pas un objectif, c'est un acquis. On y va.",
+    "Le bon RDV vaut 100 mauvais. Quality > quantity dans la prospection.",
+    "Notre arme secrète ? Le parrainage. ARSENAL ne sait pas que ça existe.",
+    "On est PSG. On joue, on encaisse, on gagne."
+  ]
+}

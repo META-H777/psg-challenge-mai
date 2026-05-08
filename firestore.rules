@@ -1,0 +1,65 @@
+rules_version = '2';
+
+// PSG Challenge Mai 2026 — Firestore security rules
+// Confidentiel : seuls les 4 emails whitelistés peuvent lire/écrire.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Liste blanche des 4 joueurs PSG
+    function isPsgTeam() {
+      return request.auth != null && request.auth.token.email in [
+        'romain.PLACEHOLDER@gmail.com',
+        'enzo.PLACEHOLDER@gmail.com',
+        'alex.PLACEHOLDER@gmail.com',
+        'adrien.PLACEHOLDER@gmail.com'
+      ];
+    }
+
+    // Identifier capitaine (Romain) pour pages restreintes
+    function isCaptain() {
+      return request.auth != null && request.auth.token.email == 'romain.PLACEHOLDER@gmail.com';
+    }
+
+    // KPIs : tous les joueurs lisent et écrivent leurs propres données
+    match /kpis/{playerId}/days/{day} {
+      allow read: if isPsgTeam();
+      allow write: if isPsgTeam() &&
+                      (request.auth.token.email.split('@')[0] == playerId || isCaptain());
+    }
+
+    // Pipeline / Leads : tous lisent, propriétaire ou capitaine éditent
+    match /leads/{leadId} {
+      allow read: if isPsgTeam();
+      allow create: if isPsgTeam();
+      allow update, delete: if isPsgTeam() &&
+                              (resource.data.assignedToId == request.auth.token.email.split('@')[0] || isCaptain());
+    }
+
+    // Daily check-ins : tous écrivent leurs propres, capitaine lit tous
+    match /checkins/{checkinId} {
+      allow read: if isPsgTeam() &&
+                    (resource.data.playerId == request.auth.token.email.split('@')[0] || isCaptain());
+      allow create: if isPsgTeam() &&
+                      request.resource.data.playerId == request.auth.token.email.split('@')[0];
+      allow update, delete: if isPsgTeam() &&
+                              resource.data.playerId == request.auth.token.email.split('@')[0];
+    }
+
+    // Notes 1-1 : capitaine seul
+    match /one-on-ones/{noteId} {
+      allow read, write: if isCaptain();
+    }
+
+    // Score adverse (estimé) : capitaine seul
+    match /arsenal-score/{day} {
+      allow read: if isPsgTeam();
+      allow write: if isCaptain();
+    }
+
+    // Default deny tout le reste
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
