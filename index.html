@@ -1467,7 +1467,7 @@
                     <span class="vs-mono" style="color:#FFE57F;font-size:9px" x-text="item.type"></span>
                   </div>
                   <div class="space-y-1.5 flex-1">
-                    <template x-for="i in 3" :key="i">
+                    <template x-for="i in 5" :key="i">
                       <div class="flex items-center gap-2">
                         <span class="vs-mono" style="color:rgba(255,255,255,0.4);font-size:9px;width:14px" x-text="i + '.'"></span>
                         <input type="text" x-model="item.entreprises[i-1]"
@@ -1579,10 +1579,10 @@
         // Plan d'action — éditable, persisté localStorage
         plan: {
           parrainages: [
-            { commercial: 'Romain',  type: 'Top 3 clients',     entreprises: ['', '', ''] },
-            { commercial: 'Alex',    type: 'Top 3 clients',     entreprises: ['', '', ''] },
-            { commercial: 'Adrien',  type: 'Top 3 clients',     entreprises: ['', '', ''] },
-            { commercial: 'Enzo',    type: 'Top 3 références',  entreprises: ['', '', ''] },
+            { commercial: 'Romain',  type: 'Top clients',     entreprises: ['', '', '', '', ''] },
+            { commercial: 'Alex',    type: 'Top clients',     entreprises: ['', '', '', '', ''] },
+            { commercial: 'Adrien',  type: 'Top clients',     entreprises: ['', '', '', '', ''] },
+            { commercial: 'Enzo',    type: 'Top références',  entreprises: ['', '', '', '', ''] },
           ],
           prospection: [
             { name: 'Couvreur'              },
