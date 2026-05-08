@@ -693,9 +693,25 @@
     .vs-grid {
       grid-template-columns: 1fr 1.2fr 1fr;
     }
-    @media (max-width: 1024px) {
+    /* Tablet : 3 colonnes serrées, layout VS conservé */
+    @media (max-width: 1024px) and (min-width: 641px) {
+      .vs-grid { grid-template-columns: 1fr 1.1fr 1fr; gap: 6px; }
+    }
+    /* Mobile : layout vertical avec arbitre AU CENTRE entre les 2 équipes */
+    @media (max-width: 640px) {
       .vs-fit-screen { min-height: auto; max-height: none; }
-      .vs-grid { grid-template-columns: 1fr; }
+      .vs-grid {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "psg"
+          "ref"
+          "arsenal";
+      }
+      .vs-grid > .vs-team-col:first-of-type { grid-area: psg; }
+      .vs-grid > .vs-referee { grid-area: ref; min-height: 240px; }
+      .vs-grid > .vs-team-col--arsenal { grid-area: arsenal; }
+      .vs-referee__photo { object-position: center 25%; }
+      .vs-vs { font-size: 44px; }
     }
 
     .vs-mono {
@@ -1160,12 +1176,9 @@
               <p class="text-[10px] text-gold-300/60 font-cinzel tracking-widest mt-0.5" x-text="`CHALLENGE MAI · J${dayOfChallenge}/30`"></p>
             </div>
           </div>
-          <div class="flex items-center gap-3">
-            <span class="text-xs text-gold-300/70 hidden sm:inline" x-text="user?.displayName?.split(' ')[0]"></span>
-            <div class="photo-ring">
-              <img :src="user?.photoURL" class="w-8 h-8 rounded-full block" />
-            </div>
-            <button @click="signOutUser()" class="text-xs text-gold-300/40 hover:text-gold-500">⏻</button>
+          <!-- Coin droit minimaliste : juste J/30 -->
+          <div class="text-right">
+            <p class="font-cinzel text-gold-500 tracking-[0.3em] text-[10px]" x-text="'JOUR ' + dayOfChallenge + ' / 30'"></p>
           </div>
         </div>
       </header>
@@ -1454,7 +1467,7 @@
                     <span class="vs-mono" style="color:#FFE57F;font-size:9px" x-text="item.type"></span>
                   </div>
                   <div class="space-y-1.5 flex-1">
-                    <template x-for="i in 5" :key="i">
+                    <template x-for="i in 3" :key="i">
                       <div class="flex items-center gap-2">
                         <span class="vs-mono" style="color:rgba(255,255,255,0.4);font-size:9px;width:14px" x-text="i + '.'"></span>
                         <input type="text" x-model="item.entreprises[i-1]"
@@ -1470,39 +1483,40 @@
 
           <!-- ============ MODULE PROSPECTION ============ -->
           <div>
-            <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
               <h3 class="font-cinzel tracking-[0.3em] text-xs inline-flex items-center gap-2" style="color:#FFC43D">
                 <svg width="11" height="13"><use href="#fleur-de-lys"/></svg>
-                PROSPECTION · Top 5 boîtes par secteur (haute marge)
+                ACTIVITÉS À HAUT POTENTIEL
               </h3>
-              <button @click="addProspectionCategory()" class="btn-gold px-3 py-1.5 rounded-lg text-xs uppercase tracking-wider">+ Ajouter secteur</button>
+              <button @click="addProspectionCategory()" class="btn-gold px-3 py-1.5 rounded-lg text-xs uppercase tracking-wider inline-flex items-center gap-1.5">
+                <svg width="11" height="13"><use href="#fleur-de-lys"/></svg>
+                + Ajouter une activité
+              </button>
             </div>
 
-            <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            <p class="text-[11px] text-gold-300/55 mb-3">
+              Liste des secteurs <span style="font-family:var(--font-serif);font-style:italic">à fort potentiel</span> pour la prospection téléphonique. Tous les commerciaux peuvent enrichir la liste.
+            </p>
+
+            <!-- Grille de "tags" activités (nom seul, pas de sous-listes) -->
+            <div class="flex flex-wrap gap-2">
               <template x-for="(cat, idx) in plan.prospection" :key="idx">
-                <div class="os-card p-3 flex flex-col group relative">
-                  <!-- Bouton supprimer (visible au hover) -->
+                <div class="prospection-tag os-card group relative inline-flex items-center gap-2 pl-3 pr-2 py-2 rounded-lg">
+                  <svg width="11" height="13" style="color:rgba(255,196,61,0.65);flex-shrink:0"><use href="#fleur-de-lys"/></svg>
+                  <input type="text"
+                         x-model="cat.name"
+                         class="prospection-input bg-transparent border-none outline-none text-white text-sm font-medium min-w-[120px]"
+                         placeholder="Nouvelle activité…"
+                         :style="`width: ${Math.max(120, (cat.name || 'Nouvelle activité').length * 9)}px`" />
                   <button @click="removeProspectionCategory(idx)"
-                          class="absolute top-1.5 right-1.5 text-gold-300/30 hover:text-danger text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                          title="Supprimer ce secteur">✕</button>
-                  <input type="text" x-model="cat.name"
-                         class="font-display text-base text-white bg-transparent border-b border-gold-500/15 pb-1 mb-2 outline-none focus:border-gold-500" />
-                  <div class="space-y-1.5 flex-1">
-                    <template x-for="i in cat.boites.length" :key="i">
-                      <div class="flex items-center gap-2">
-                        <span class="vs-mono" style="color:rgba(255,255,255,0.4);font-size:9px;width:14px" x-text="i + '.'"></span>
-                        <input type="text" x-model="cat.boites[i-1]"
-                               class="flex-1 input-navy rounded-md px-2 py-1.5 text-xs text-white"
-                               placeholder="Nom boîte…" />
-                      </div>
-                    </template>
-                  </div>
+                          class="text-gold-300/40 hover:text-danger text-xs px-1.5 py-0.5 rounded transition-colors opacity-0 group-hover:opacity-100"
+                          title="Retirer cette activité">✕</button>
                 </div>
               </template>
             </div>
 
             <p class="text-[10px] text-gold-300/40 font-cinzel tracking-widest mt-3 text-center">
-              Astuce : ajoutez vos secteurs perso (ex: Maçonnerie, Électricien, Restauration). Cliquez sur un titre pour le renommer.
+              Astuce : tape l'activité (Maçon, Électricien, Restauration…) puis bouton "Ajouter une activité" pour étoffer la liste collective.
             </p>
           </div>
 
@@ -1565,27 +1579,26 @@
         // Plan d'action — éditable, persisté localStorage
         plan: {
           parrainages: [
-            { commercial: 'Romain',  type: 'Top 3 clients',     entreprises: ['', '', '', '', ''] },
-            { commercial: 'Alex',    type: 'Top 3 clients',     entreprises: ['', '', '', '', ''] },
-            { commercial: 'Adrien',  type: 'Top 3 clients',     entreprises: ['', '', '', '', ''] },
-            { commercial: 'Enzo',    type: 'Top 3 références',  entreprises: ['', '', '', '', ''] },
+            { commercial: 'Romain',  type: 'Top 3 clients',     entreprises: ['', '', ''] },
+            { commercial: 'Alex',    type: 'Top 3 clients',     entreprises: ['', '', ''] },
+            { commercial: 'Adrien',  type: 'Top 3 clients',     entreprises: ['', '', ''] },
+            { commercial: 'Enzo',    type: 'Top 3 références',  entreprises: ['', '', ''] },
           ],
           prospection: [
-            { name: 'Couvreur',             boites: ['', '', '', '', ''] },
-            { name: 'Paysagiste',           boites: ['', '', '', '', ''] },
-            { name: 'Plombier-chauffagiste',boites: ['', '', '', '', ''] },
-            { name: 'Travaux publics',      boites: ['', '', '', '', ''] },
-            { name: 'Dératisation',         boites: ['', '', '', '', ''] },
+            { name: 'Couvreur'              },
+            { name: 'Paysagiste'            },
+            { name: 'Plombier-chauffagiste' },
+            { name: 'Travaux publics'       },
+            { name: 'Dératisation'          },
           ],
         },
 
         // Équipe ARSENAL (rivale) — KPIs éditables identiques aux PSG pour permettre comparatif
         teamArsenal: [
-          { id: 'geff',     name: 'Samuel G.', role: 'Capitaine ARSENAL',  position: 'CAP', isCaptain: true,  photoUrl: 'assets/img/players/geff-arsenal.png',     kpis: [
-            { label: 'RDV pris',     current: 0, target: 20,    key: 'RDV' },
-            { label: 'Marge brute',  current: 0, target: 30000, key: 'MAR', unit: ' €' },
-            { label: 'Fiches CRM',   current: 0, target: 600,   key: 'CRM' },
-            { label: 'Ventes',       current: 0, target: 4,     key: 'VEN' },
+          { id: 'geff',     name: 'Samuel G.', role: 'Capitaine · Technico',position: 'TEC', isCaptain: true,  photoUrl: 'assets/img/players/geff-arsenal.png',     kpis: [
+            { label: 'Objectif renouv',  current: 0, target: 100, key: 'REN', unit: '%' },
+            { label: 'Ventes parrainage',current: 0, target: 2,   key: 'PAR' },
+            { label: 'VA réalisées',     current: 0, target: 4,   key: 'VA' },
           ]},
           { id: 'lauriane', name: 'Lauriane',  role: 'Commerciale ARSENAL',position: 'COM', isCaptain: false, photoUrl: 'assets/img/players/lauriane-arsenal.png', kpis: [
             { label: 'RDV pris',     current: 0, target: 20,    key: 'RDV' },
@@ -1802,9 +1815,15 @@
           } catch (e) { /* ignore */ }
         },
 
-        // Ajoute / supprime une catégorie de prospection
+        // Ajoute / supprime une activité à prospecter
         addProspectionCategory() {
-          this.plan.prospection.push({ name: 'Nouveau secteur', boites: ['', '', '', '', ''] });
+          this.plan.prospection.push({ name: '' });
+          // Focus auto sur le nouvel input à la prochaine frame
+          this.$nextTick && this.$nextTick(() => {
+            const inputs = document.querySelectorAll('.prospection-input');
+            const last = inputs[inputs.length - 1];
+            if (last) last.focus();
+          });
         },
         removeProspectionCategory(idx) {
           if (idx < 0 || idx >= this.plan.prospection.length) return;
