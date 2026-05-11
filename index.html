@@ -1193,9 +1193,13 @@
               <p class="text-[10px] text-gold-300/60 font-cinzel tracking-widest mt-0.5" x-text="`CHALLENGE MAI · J${dayOfChallenge}/30`"></p>
             </div>
           </div>
-          <!-- Coin droit minimaliste : juste J/30 -->
+          <!-- Coin droit minimaliste : indicateur live + J/30 -->
           <div class="text-right">
-            <p class="font-cinzel text-gold-500 tracking-[0.3em] text-[10px]" x-text="'JOUR ' + dayOfChallenge + ' / 30'"></p>
+            <div class="flex items-center gap-2 justify-end">
+              <span class="os-live-dot" :style="`opacity: ${_lastVersion > 0 ? 1 : 0.35}`"></span>
+              <span class="font-cinzel text-[9px] tracking-[0.22em]" :style="`color: ${_lastVersion > 0 ? '#86efac' : 'rgba(255,255,255,0.4)'}`" x-text="_lastVersion > 0 ? 'SYNC LIVE' : 'OFFLINE'"></span>
+            </div>
+            <p class="font-cinzel text-gold-500 tracking-[0.3em] text-[10px] mt-1" x-text="'JOUR ' + dayOfChallenge + ' / 30'"></p>
           </div>
         </div>
       </header>
@@ -1671,6 +1675,14 @@
           ]},
         ],
 
+        // ============ LIVE SHARED API (self-hosted Hetzner) ============
+        SHARED_API_URL: 'https://178-104-250-119.sslip.io/api/state',
+        SHARED_API_POLL_MS: 4000,
+        _lastVersion: 0,
+        _pollTimer: null,
+        _saveTimer: null,
+        _isApplyingRemote: false,
+
         // ============ INIT ============
         async init() {
           // Mode démo activé par défaut SAUF si ?prod explicite (pour Firebase Auth quand on l'aura câblé)
@@ -1688,6 +1700,85 @@
           const today = new Date();
           this.dayOfChallenge = Math.max(1, Math.floor((today - start) / (1000 * 60 * 60 * 24)) + 1);
           this.loadFromLocalStorage();
+          // Tentative de récupération du state partagé live (non bloquant si offline)
+          this.syncFromShared().finally(() => this.startSharedPolling());
+        },
+
+        // ============ LIVE SHARED STATE — Hetzner VPS API ============
+        async syncFromShared() {
+          try {
+            const r = await fetch(this.SHARED_API_URL, { cache: 'no-store' });
+            if (!r.ok) return;
+            const remote = await r.json();
+            const remoteVersion = (remote._meta && remote._meta.version) || 0;
+            if (remoteVersion <= this._lastVersion) return;
+            this._lastVersion = remoteVersion;
+            this._isApplyingRemote = true;
+            this.applyShared(remote);
+            this._isApplyingRemote = false;
+          } catch (e) {
+            // Offline ou API down → on continue avec localStorage
+            console.debug('shared sync skipped:', e.message);
+          }
+        },
+
+        applyShared(remote) {
+          const mergePlayer = (player, saved) => {
+            if (!saved || !Array.isArray(saved.kpis)) return;
+            for (const k of player.kpis) {
+              const m = saved.kpis.find(s => s.key === k.key);
+              if (m && Number.isFinite(Number(m.current))) k.current = Number(m.current);
+            }
+          };
+          if (remote.players && typeof remote.players === 'object') {
+            for (const p of this.players) mergePlayer(p, remote.players[p.id]);
+          }
+          if (remote.teamArsenal && typeof remote.teamArsenal === 'object') {
+            for (const p of this.teamArsenal) mergePlayer(p, remote.teamArsenal[p.id]);
+          }
+          if (remote.plan && typeof remote.plan === 'object') {
+            if (Array.isArray(remote.plan.parrainages)) this.plan.parrainages = remote.plan.parrainages;
+            if (Array.isArray(remote.plan.prospection)) this.plan.prospection = remote.plan.prospection;
+          }
+        },
+
+        startSharedPolling() {
+          if (this._pollTimer) return;
+          this._pollTimer = setInterval(() => this.syncFromShared(), this.SHARED_API_POLL_MS);
+        },
+
+        // Push debounced — appelé après chaque saisie pour propager
+        scheduleSharedPush() {
+          if (this._isApplyingRemote) return;
+          if (this._saveTimer) clearTimeout(this._saveTimer);
+          this._saveTimer = setTimeout(() => this.pushShared(), 800);
+        },
+
+        async pushShared() {
+          const me = this.me() || {};
+          const payload = {
+            players: Object.fromEntries(this.players.map(p => [p.id, {
+              kpis: p.kpis.map(k => ({ key: k.key, current: Number(k.current) || 0, target: k.target, label: k.label })),
+            }])),
+            teamArsenal: Object.fromEntries(this.teamArsenal.map(p => [p.id, {
+              kpis: p.kpis.map(k => ({ key: k.key, current: Number(k.current) || 0, target: k.target, label: k.label })),
+            }])),
+            plan: JSON.parse(JSON.stringify(this.plan)),
+            _by: me.name || (this.user && this.user.displayName) || 'anonymous',
+          };
+          try {
+            const r = await fetch(this.SHARED_API_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });
+            if (r.ok) {
+              const data = await r.json();
+              if (data._meta && data._meta.version) this._lastVersion = data._meta.version;
+            }
+          } catch (e) {
+            console.debug('shared push failed (offline?):', e.message);
+          }
         },
 
         setupAuth() {
@@ -1794,7 +1885,9 @@
             all[player.id] = payload;
             localStorage.setItem('psg-challenge-kpis', JSON.stringify(all));
           } catch (e) { /* ignore */ }
-          this.saveMsg = `⚜ ${player.name} — ${Math.round(this.playerProgress(player) * 100)}% objectif sauvegardé`;
+          // Push vers l'API live partagée Hetzner (debounced 800ms)
+          this.scheduleSharedPush();
+          this.saveMsg = `⚜ ${player.name} — ${Math.round(this.playerProgress(player) * 100)}% sauvegardé (synchro live)`;
           setTimeout(() => this.saveMsg = '', 3000);
         },
 
@@ -1821,15 +1914,16 @@
           } catch (e) { /* ignore */ }
         },
 
-        // Persiste le plan d'action en localStorage
+        // Persiste le plan d'action (localStorage + API live partagée)
         savePlan() {
           try {
             const all = JSON.parse(localStorage.getItem('psg-challenge-kpis') || '{}');
             all['__plan__'] = JSON.parse(JSON.stringify(this.plan));
             localStorage.setItem('psg-challenge-kpis', JSON.stringify(all));
-            this.saveMsg = '⚜ Plan d\'action sauvegardé';
-            setTimeout(() => this.saveMsg = '', 2500);
           } catch (e) { /* ignore */ }
+          this.scheduleSharedPush();
+          this.saveMsg = '⚜ Plan d\'action sauvegardé (synchro live)';
+          setTimeout(() => this.saveMsg = '', 2500);
         },
 
         // Ajoute / supprime une activité à prospecter
