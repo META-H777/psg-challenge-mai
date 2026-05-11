@@ -9,6 +9,19 @@
   <link rel="manifest" href="manifest.json" />
   <title>PSG Challenge Mai 2026</title>
 
+  <!-- AUTO-PURGE : désinstalle le service worker v1/v2/v3 si présent (ancien cache obsolète).
+       Conséquence : à la prochaine visite, la page est toujours servie par le réseau. Plus de souci de "ancien lien". -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((regs) => {
+        regs.forEach((r) => r.unregister().catch(() => {}));
+      }).catch(() => {});
+      if (window.caches && typeof caches.keys === 'function') {
+        caches.keys().then((keys) => keys.forEach((k) => caches.delete(k).catch(() => {}))).catch(() => {});
+      }
+    }
+  </script>
+
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
